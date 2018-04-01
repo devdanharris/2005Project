@@ -1,18 +1,24 @@
+<title>REPLY</title>
+<style>
+table {
+    border-collapse: collapse;
+}
 
-{% extends "layout.html" %}
-
+table, td, th {
+    border: 1px solid black;
+}
+</style>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 {% block content %}
 
 
-      <table border="1">
-         <thead>
+      <table>
             <tr>
                <th>Author</th>
                <th>Content</th>
             </tr>
-         </thead>
 
-         <tbody>
+
             {% for post in posts %}
                <tr>
                   <td>{{ post.author }}</td>
@@ -21,17 +27,19 @@
             {% endfor %}
 
 
-         </tbody>
+
       </table>
 
       <form action = "{{ request.path }}" method = "post">
-         <label for = "content">Content</label><br>
-         <input type = "text" name = "content" placeholder = "Post Content" /><br>
-         <input type = "submit" value = "Submit" />
+         <label for = "content">Please write your reply below: </label><br>
+         <input type = "text" name = "content" placeholder = "Add a reply..." /><br>
+         <input type = "submit" value = "Submit to post" />
       </form>
 	{%- for category, message in get_flashed_messages(with_categories = true) %}
          <div class = "alert alert-danger">
             <span style="color: red;">{{ message }}</span>
          </div>
       {%- endfor %}
+
+    <a href = "{{ url_for('show_all') }}">Back to Home Page</a><br><br><br>
 {% endblock %}

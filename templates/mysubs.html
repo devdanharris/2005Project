@@ -1,44 +1,57 @@
+<style>
+table, td, th {
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding: 15px;
+}
+
+
+</style>
 
 {% block content %}
-	<h3>My subscription</h3>
+	<h3>Listed below are your subscribed topics</h3>
 
 
-      <table border="1">
-         <thead>
+      <table>
             <tr>
                <th>My Subscribed Topics</th>
                 <th>New Posts</th>
             </tr>
-         </thead>
 
-         <tbody>
             {% for sub1 in subTopics %}
                <tr>
                <td><a href = {{ url_for('showTopic', topic = sub1.topic) }}>{{  sub1.topic  }}</a></td>
                <td>{{  sub1.notification  }}</td>
                </tr>
             {% endfor %}
-         </tbody>
       </table>
 
-      <table border="1">
-         <thead>
+
+    	<h3>Listed below are the posts you're subscribed to.</h3>
+
+
+      <table>
             <tr>
                <th>My Subscribed Posts</th>
                 <th>New Posts</th>
             </tr>
-         </thead>
 
-         <tbody>
             {% for sub2 in subPosts %}
                <tr>
                <td><a href = {{ url_for('replyto', post_id = sub2.postID) }}>{{  sub2.postTitle  }}</a></td>
                <td>{{  sub2.notification  }}</td>
                </tr>
             {% endfor %}
-         </tbody>
       </table>
-
+<p><a href = "{{ url_for('show_all') }}">Back to Home Page</a><br><br><br></p>
 
 {% endblock %}
 

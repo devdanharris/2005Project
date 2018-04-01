@@ -1,24 +1,32 @@
+<title>REGISTER</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 
-{% extends "layout.html" %}
-
-{% block content %}
-
+{% block body %}
   <h2>Register</h2>
+    <p> Let's get started. </p>
+    <p>Your username should not be more than 15 characters.</p>
+    <p>Your password should not be more than 10 characters.</p>
+
   {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
-          {%- for message in get_flashed_messages() %}
-         {{ message }}
-      {%- endfor %}
   <form action="{{ url_for('register') }}" method=post>
-    <dl>
-      <dt>New Username:
-      <dd><input type=text name=username>
-      <dt>New Password:
-      <dd><input type=text name=password>
-	<hr/>
-      {%- for message in get_flashed_messages() %}
-        <span style="color: red;">{{ message }}</span> 
-      {%- endfor %}
-      <dd><input type=submit value=Register>
-    </dl>
+  <div>
+      <label for=text>New Username</label>:
+      <input type=text name=username placeholder="New Username..">
+      <label for=password>Create a password</label>:
+      <input type=text name=password placeholder="Create a Password..">
+      <label for=password>Confirm your password</label>:
+      <input type=text name=password>
+      <input type=submit value=Register>
+  </div>
+
   </form>
+
+    <p>Already have an account? <a href = "{{ url_for('login') }}">Login     </a></p>
+
+
+            <p><a href = "{{ url_for('show_all') }}">Back to Home Page</a><br><br><br></p>
+
 {% endblock %}
+
+
+</html>
