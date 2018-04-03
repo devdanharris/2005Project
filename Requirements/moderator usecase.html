@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="generator" content="ReText 5.3.1">
+</head>
+<body>
+
+<p><strong>Title:</strong> <strong>Accepting Users to Private Channels</strong><br>
+<strong>Primary Actor:</strong> Moderator <br>
+<strong>Stakeholders and Interests:</strong>  </p>
+<blockquote>
+<p>Moderator - wants to filter users who want to gain access into the collaborative tool.<br>
+ User - trying to gain access into the collaborative tool.   </p>
+</blockquote>
+<p><strong>Precondition:</strong> User with Moderator priviledges logged in already, and has access to MUN's registration database.<br>
+<strong>Trigger:</strong> Moderator notified of new user trying to gain access into SuD.<br>
+<strong>Main success scenario:</strong>  </p>
+<blockquote>
+<ol>
+<li>Moderator selects view user requests action.</li>
+<li>SuD lists unreviewed user requests.</li>
+<li>Moderator selects specific user to review from list.</li>
+<li>SuD lists user's Credentials as given.</li>
+<li>Moderator checks to make sure user is formally registered as a student at MUN or if the user is a special guest.</li>
+<li>Moderator changes users request to accepted.</li>
+<li>SuD records user accepted, reviewer, time and date.</li>
+<li>SuD notifies user of change in status </li>
+<li>Moderator repeats 3-9 as desired.</li>
+</ol>
+</blockquote>
+<p><strong>Extensions:</strong></p>
+<blockquote>
+<ol style="list-style-type: none;">
+<li>4a. User put in credentials in the wrong format:
+<ol style="list-style-type: none;">
+<li>4a1. SuD notifies user of wrong credentials.</li>
+<li>4a2. User re-enters credentials correctly</li>
+<li>4a3. User initiates <em>Accepting Users</em> use case</li>
+</ol>
+</li>
+<li>5a. User is not a formally registered student or a special guest:
+<ol style="list-style-type: none;">
+<li>5a1. Moderator checks user's credentials.</li>
+<li>5a2. Moderator rejects students user's to join the collaborative tool</li>
+<li>5a3. SuD notifies student of rejection</li>
+</ol>
+<li>5b. Database mderator uses to check student's credentials is down:
+<ol style="list-style-type: none;">
+<li>5b1. Moderator tries to verify student's enrollment.</li>
+<li>5b2. Moderator waits till server is back on</li>
+<li>5b3. SuD notifies student of extra wait time in gaining access.</li>
+</blockquote>
+
+
+</body>
+</html>
