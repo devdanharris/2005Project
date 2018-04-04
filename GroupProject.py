@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from sqlalchemy import and_
 
-
+#Set up the persistent database using SQL Alchemy.
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test018.sqlite3'
 app.config['SECRET_KEY'] = "random string"
@@ -142,20 +142,25 @@ def new():
 
     :return: Returns the HTML template 'new.html'.
     """
+    # Check to see if the user is logged into an existing account.
     if request.method == 'POST':
         if session.get('username') is None:
             flash('Error: Must be logged in to post')
+        # Deny the post with an error flashed if the content area is left blank.
         elif not request.form['title' ] or not request.form['content']:
 
             flash('Please enter all the fields', 'error')
-
+        # Otherwise, create a post with the entered title, content, topic, and the author's username.
         else:
             post = Post(request.form['title'], request.form['content'], request.form['topic'], session['username'])
+            # Loop through the subscriptions to notify the users (who are subscribed) that a new post has been made.
             subs = Subscription.query.filter(Subscription.topic == request.form['topic'])
             for sub in subs:
                 sub.notification = True
+            # Commit the post to the database to be stored.
             db.session.add(post)
             db.session.commit()
+            # Notify success to the user and redirect to the home page.
             flash('Post was successfully added')
             return redirect(url_for('show_all'))
     return render_template('new.html')
@@ -169,15 +174,20 @@ def replyto(post_id):
     :type post_id: Integer
     :return: Returns the HTML template 'reply.html'.
     """
+    # Check to see if the user is logged into an existing account.
     if request.method == 'POST':
         if session.get('username') is None:
             flash('Error: Must be logged in to post')
+        # Deny the post with an error flashed if the content area is left blank.
         elif not request.form['content']:
             flash('Please enter a reply between 1 and 250 characters', 'error')
+        # Otherwise, create the reply to the post identified by post_id with the content, and the author's username.
         else:
             post = Post("Reply", request.form['content'], " ", session['username'], post_id)
+            # Commit the reply to the database to be stored.
             db.session.add(post)
             db.session.commit()
+            # Notify success to the user and redirect to the home page.
             flash('Reply was successfully added')
             return redirect(url_for('show_all'))
     return render_template('reply.html', posts=Post.query.filter(or_(Post.replyID == post_id, Post.postID == post_id)))
@@ -190,14 +200,19 @@ def subscribetotopic(topic):
     :type topic: String
     :return: Returns the HTML template 'show_all.html'.
     """
+    # Check to see if the user is logged into an existing account.
     if session.get('username') is None:
         flash('Error: Must be logged in to subscribe')
+    # Add the subscription to the topic name for the user currently logged in.
     elif Subscription.query.filter(and_(Subscription.topic == topic, Subscription.userID == session['username'])).first() is None:
         sub = Subscription(session['username'], topic)
+        # Commit the subscription to the database.
         db.session.add(sub)
         db.session.commit()
+        # Notify success to the user and redirect to the home page.
         flash(str(session['username']) + " subscribed to topic " + topic)
     else:
+        # If the user is already subscribed to the topic requested, flash the following notification.
         flash("You're already subscribed to topic " + topic)
     return redirect(url_for('show_all'))
 
@@ -209,15 +224,19 @@ def subscribetopost(post_id):
     :type post_id: Integer
     :return: Returns the HTML template 'show_all.html'.
     """
-
+    # Check to see if the user is logged into an existing account.
     if session.get('username') is None:
         flash('Error: Must be logged in to subscribe')
+    # Add the subscription to the post name for the user currently logged in.
     elif Subscription.query.filter(and_(Subscription.postID == post_id, Subscription.userID == session['username'])).first() is None:
         sub = Subscription(session['username'], None, post_id)
+        # Commit the subscription to the database.
         db.session.add(sub)
         db.session.commit()
+        # Notify success to the user and redirect to the home page.
         flash(str(session['username']) + " subscribed to post " + str(post_id))
     else:
+        # If the user is already subscribed to the post requested, flash the following notification.
         flash("You're already subscribed to post " + str(post_id))
     return redirect(url_for('show_all'))
 
@@ -227,23 +246,30 @@ def showSubs():
 
     :return: Returns the HTML template 'mysubs.html'.
     """
+    # Check to see if the user is logged into an existing account.
     if session.get('username') is None:
         flash('Error: Must be logged in to view subscriptions')
     else:
+        # Check and gather the subscriptions that the user has made.
         subs = Subscription.query.filter(Subscription.userID == session['username'])
+        # Show the current user's subscriptions.
         x = render_template('mysubs.html', subTopics=Subscription.query.filter(and_(Subscription.userID == session['username'], Subscription.postID == 0)), subPosts=db.session.query(Subscription).filter(and_(Subscription.userID == session['username'], (Subscription.topic == None))))
+        # Set the user's notifications to false (since they have been checked once this code is executed).
         for sub in subs:
             sub.notification = False
+        # Update the database and commit.
         db.session.commit()
         return x
 
 @app.route('/topic/<topic>')
 def showTopic(topic):
-    """This is a placeholder
+    """Creates a compilation of all the templates to view the overall project with topics included.
 
-    :param topic:
-    :return:
+    :param topic: The topic to be added to the page.
+    :type topic: String
+    :return: Returns the HTML template 'show_all.html'.
     """
+    # Renders the show all template.
     return render_template('show_all.html', posts=Post.query.filter(and_(Post.replyID == 0, Post.topic == topic)))
 
 @app.route('/')
@@ -252,6 +278,7 @@ def show_all():
 
     :return: Returns the HTML template 'show_all.html'.
     """
+    # Renders the show all template.
     return render_template('show_all.html', posts=Post.query.filter(Post.replyID == 0), groups=Group.query.filter(Group.groupID == 0))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -264,20 +291,27 @@ def login():
     """
     error = None
     if request.method == 'POST':
+        # Request and store the entered username if it exists.
         loginuser = User.query.filter_by(username = request.form['username']).first()
         if loginuser:
+            # Check if the entered password matches the password stored for the username.
             if loginuser.password == request.form['password']:
+                    # If the password matches, set the session user to 'username' and toggle logged in to true.
                     session['username'] = request.form['username']
                     session['logged_in'] = True
+                    # Notify the user that they were successfully logged in.
                     flash('You were logged in as ' + session['username'])
 
                     return redirect(url_for('show_all'))
-
+            # With incorrect password, notify the user that an error has been made.
             else:
                 flash('Incorrect Username and/or Password')
+                # Reload the login page.
                 return redirect(url_for('login'))
+        # With incorrect username, notify the user that an error has been made.
         else:
             flash('Incorrect Username and/or Password')
+            # Reload the login page.
             return render_template('login.html')
     return render_template('login.html', error=error)
 
@@ -292,17 +326,25 @@ def register():
     """
     error = None
     if request.method == 'POST':
+        # Check if the user attempting to register has left any fields blank.
         if not request.form['username'] or not request.form['password']:
+            # Notify the user that fields have been left blank and reload the page.
             flash('Please enter all the fields')
             render_template('register.html')
         else:
+            # Check if the entered username exists.
             loginuser = User.query.filter_by(username=request.form['username']).first()
+            # If the username entered is unique, proceed to create the account.
             if not loginuser:
+                # Create the user with the entered username and password.
                 user = User(request.form['username'], request.form['password'])
+                # Commit the user to the database and store it.
                 db.session.add(user)
                 db.session.commit()
+                # Notify the user of successful account creation.
                 flash('User Successfully Registered')
                 return redirect(url_for('show_all'))
+            # If the username exists, flash the error and reload the page.
             else:
                 flash('Error: User already exists')
                 return redirect(url_for('register'))
@@ -315,8 +357,10 @@ def logout():
 
     :return: Returns the redirect url for 'show_all.html'.
     """
+    # Set logged in to none (false) and username to none.
     session.pop('logged_in', None)
     session.pop('username', None)
+    # Notify the user of logout success and reload the page.
     flash('You were logged out')
     return redirect(url_for('show_all'))
 
@@ -329,19 +373,26 @@ def create_group():
 
     error = None
     if request.method == 'POST':
+        # Check to see if the user is logged in, flash the error if not.
         if session.get('username') is None:
             flash('Error: Must be logged in to create a group.')
+        # Check to see if the user entered a name for the group in the required field, flash the error if not.
         if not request.form['group_name']:
             flash('Please enter the group name.')
             render_template('group.html')
         else:
+            # Set the group name to the name entered by the user.
             group_name = Group.query.filter_by(group_name=request.form['group_name']).first()
+            # If the group does not already exist, create the group with the user entered name.
             if not group_name:
                 group = Group(request.form['group_name'])
+                # Commit the group to the database and store it.
                 db.session.add(group)
                 db.session.commit()
+                # Notify the user that the group was created successfully.
                 flash('Group Successfully Created')
                 return redirect(url_for('show_all'))
+            # If the group exists already, flash the error and reload the page.
             else:
                 flash('Error: Group already exists')
                 return redirect(url_for('create_group'))
@@ -356,13 +407,18 @@ def join_group(group_name):
     :return: Returns the redirect url for 'show_all.html'.
     """
 
+    # Check if the user is logged in, flash the error if not.
     if session.get('username') is None:
         flash('Error: Must be logged in to join a group')
+    # Add the current user to the group specified by group_name.
     elif Group.query.filter(and_(Group.group_name == group_name, Group.userID == session['username'])).first() is None:     #[SQL: 'INSERT INTO "group" (group_id, "userID", group_name) VALUES (?, ?, ?)'] [parameters: ('fgh', 'assd', 'assd')]  , Group.userID == session['username'] and_(Group.group_name == group_name, Group.userID == session['username'])
         group = Group(session['username'], group_name)  #Im passing in a username here, but not accepting it in the Group() parameters. Fix this.
+        # Commit the user to the group and store.
         db.session.add(group)
         db.session.commit()
+        # Notify the user of the successful join to the group.
         flash(str(session['username']) + " joined the group " + group_name)
+    # If the user is already in the group, flash the error.
     else:
         flash("You're already a member of the group " + group_name)
     return redirect(url_for('show_all'))
@@ -372,3 +428,6 @@ db.create_all()
 if __name__ == '__main__':
 
     app.run()
+
+
+
