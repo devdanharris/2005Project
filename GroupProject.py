@@ -64,16 +64,20 @@ class Post(db.Model):
     replies = db.Column('replies', db.Integer)
     subscriptions = db.relationship('Subscription', backref='post', lazy=True)
 
-    def __init__(self, title, content, topic, replyID = 0):
+    def __init__(self, title, content, topic, author, replyID = 0):
         self.replyID = replyID
+        self.topic = topic
+        if replyID is not 0:
+            replyto = Post.query.filter_by(postID = replyID).first()
+            self.topic = replyto.topic
+            replyto.replies = replyto.replies + 1
+            subs = Subscription.query.filter(or_(Subscription.postID == replyID,Subscription.topic == replyto.topic))
+            for sub in subs:
+                sub.notification = True
         self.title = title
         self.content = content
-        self.topic = topic
         self.replies = 0
-        if session.get('username'):
-            self.author = session['username']
-        else:
-            self.author = "Anonymous"
+        self.author = author
 
 class Subscription(db.Model):
     """This Subscription class stores all the information of a user's subscriptions to topics and/or posts.
@@ -146,13 +150,13 @@ def new():
             flash('Please enter all the fields', 'error')
 
         else:
-            post = Post(request.form['title'], request.form['content'], request.form['topic'])
+            post = Post(request.form['title'], request.form['content'], request.form['topic'], session['username'])
             subs = Subscription.query.filter(Subscription.topic == request.form['topic'])
             for sub in subs:
                 sub.notification = True
             db.session.add(post)
             db.session.commit()
-            flash('Record was successfully added')
+            flash('Post was successfully added')
             return redirect(url_for('show_all'))
     return render_template('new.html')
 
@@ -165,22 +169,16 @@ def replyto(post_id):
     :type post_id: Integer
     :return: Returns the HTML template 'reply.html'.
     """
-
     if request.method == 'POST':
         if session.get('username') is None:
             flash('Error: Must be logged in to post')
         elif not request.form['content']:
             flash('Please enter a reply between 1 and 250 characters', 'error')
         else:
-            replyto = Post.query.filter_by(postID = post_id).first()
-            replyto.replies = replyto.replies + 1
-            subs = Subscription.query.filter(or_(Subscription.postID == post_id,Subscription.topic == replyto.topic))
-            for sub in subs:
-                sub.notification = True
-            post = Post("Reply", request.form['content'], replyto.topic, post_id)
+            post = Post("Reply", request.form['content'], " ", session['username'], post_id)
             db.session.add(post)
             db.session.commit()
-            flash('Record was successfully added')
+            flash('Reply was successfully added')
             return redirect(url_for('show_all'))
     return render_template('reply.html', posts=Post.query.filter(or_(Post.replyID == post_id, Post.postID == post_id)))
 
