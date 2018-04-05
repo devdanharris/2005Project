@@ -1,7 +1,8 @@
 import unittest
 from GroupProject import *
 
-class TestUsers(unittest.TestCase):
+
+class TestBase(unittest.TestCase):
 
     def setUp(self):
         app.config['TESTING'] = True

@@ -1,13 +1,12 @@
-
-{% extends "layout.html" %}
+<title>CREATE A GROUP</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 {% block content %}
 
-      <h3>Groups (<a href = "{{ url_for('create_group') }}">Create Group
-         </a>)</h3>
+      <h3>Create a Group</h3>
 
       <form action = "{{ request.path }}" method = "post">
          <label for = "group_name">Group Name</label><br>
-         <input type = "text" name = "group_name" placeholder = "Group Name" /><br>
+         <input type = "text" name = "group_name" placeholder = "Group Name.." /><br>
          <input type = "submit" value = "Submit" />
       </form>
 
@@ -15,5 +14,6 @@
          <div class = "alert alert-danger">
             <span style="color: red;">{{ message }}</span>
          </div>
-      {%- endfor %}
+    {%- endfor %}
+    <p><a href = "{{ url_for('show_all') }}">Back to Home Page</a><br><br><br></p>
 {% endblock %}

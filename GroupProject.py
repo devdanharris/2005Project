@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from sqlalchemy import and_
 
-#Set up the persistent database using SQL Alchemy.
+# Set up the persistent database using SQL Alchemy.
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test018.sqlite3'
 app.config['SECRET_KEY'] = "random string"
@@ -33,6 +33,7 @@ class User(db.Model):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+
 
 class Post(db.Model):
     """This Post class handles the creation and viewing of new posts, as well as replies to posts.
@@ -79,6 +80,7 @@ class Post(db.Model):
         self.replies = 0
         self.author = author
 
+
 class Subscription(db.Model):
     """This Subscription class stores all the information of a user's subscriptions to topics and/or posts.
 
@@ -95,8 +97,6 @@ class Subscription(db.Model):
     :type postTitle: String
     :type notification: Boolean
     """
-
-
     __tablename__ = 'subscription'
     subID = db.Column('sub_id', db.Integer, primary_key=True)
     userID = db.Column(db.String(15), db.ForeignKey('user.id'), nullable=False)
@@ -129,9 +129,8 @@ class Group(db.Model):
     userID = db.Column(db.String(15), db.ForeignKey('user.id'), nullable=False)
     group_name = db.Column('group_name', db.String(20))
 
-    def __init__(self, group_name, groupID = 0):
+    def __init__(self, group_name):
         self.group_name = group_name
-        self.groupID = groupID
         if session.get('username'):
             self.userID = session['username']
 
@@ -192,6 +191,7 @@ def replyto(post_id):
             return redirect(url_for('show_all'))
     return render_template('reply.html', posts=Post.query.filter(or_(Post.replyID == post_id, Post.postID == post_id)))
 
+
 @app.route('/subscribetotopic/<topic>')
 def subscribetotopic(topic):
     """Subscribes the user to their selected topic keyword.
@@ -215,6 +215,7 @@ def subscribetotopic(topic):
         # If the user is already subscribed to the topic requested, flash the following notification.
         flash("You're already subscribed to topic " + topic)
     return redirect(url_for('show_all'))
+
 
 @app.route('/subscribetopost/<int:post_id>')
 def subscribetopost(post_id):
@@ -240,6 +241,7 @@ def subscribetopost(post_id):
         flash("You're already subscribed to post " + str(post_id))
     return redirect(url_for('show_all'))
 
+
 @app.route('/mysubs')
 def showSubs():
     """Generates a list of all subscriptions that a user has made.
@@ -261,6 +263,7 @@ def showSubs():
         db.session.commit()
         return x
 
+
 @app.route('/topic/<topic>')
 def showTopic(topic):
     """Creates a compilation of all the templates to view the overall project with topics included.
@@ -272,6 +275,7 @@ def showTopic(topic):
     # Renders the show all template.
     return render_template('show_all.html', posts=Post.query.filter(and_(Post.replyID == 0, Post.topic == topic)))
 
+
 @app.route('/')
 def show_all():
     """Creates a compilation of all templates to view the overall project.
@@ -280,6 +284,7 @@ def show_all():
     """
     # Renders the show all template.
     return render_template('show_all.html', posts=Post.query.filter(Post.replyID == 0), groups=Group.query.filter(Group.groupID == 0))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -364,6 +369,7 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('show_all'))
 
+
 @app.route('/create_group', methods=['GET', 'POST'])
 def create_group():
     """Creates a group with the defined group name, and logs the creator.
@@ -398,6 +404,7 @@ def create_group():
                 return redirect(url_for('create_group'))
     return render_template('group.html', error=error)
 
+
 @app.route('/join_group/<group_name>')
 def join_group(group_name):
     """Allows a user to join a group.
@@ -411,8 +418,8 @@ def join_group(group_name):
     if session.get('username') is None:
         flash('Error: Must be logged in to join a group')
     # Add the current user to the group specified by group_name.
-    elif Group.query.filter(and_(Group.group_name == group_name, Group.userID == session['username'])).first() is None:     #[SQL: 'INSERT INTO "group" (group_id, "userID", group_name) VALUES (?, ?, ?)'] [parameters: ('fgh', 'assd', 'assd')]  , Group.userID == session['username'] and_(Group.group_name == group_name, Group.userID == session['username'])
-        group = Group(session['username'], group_name)  #Im passing in a username here, but not accepting it in the Group() parameters. Fix this.
+    elif Group.query.filter(and_(Group.group_name == group_name, Group.userID == session['username'])).first() is None:
+        group = Group(group_name)
         # Commit the user to the group and store.
         db.session.add(group)
         db.session.commit()
