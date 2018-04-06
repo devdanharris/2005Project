@@ -133,6 +133,8 @@ class Group(db.Model):
         self.group_name = group_name
         if session.get('username'):
             self.userID = session['username']
+        else:
+            self.userID = 0
 
 
 @app.route('/new', methods=['GET', 'POST'])
